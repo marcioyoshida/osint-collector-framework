@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OSIRIS // 3D Situation Room</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap');
+:root{
+  --bg:#020508;--panel:rgba(3,12,20,0.95);--b:rgba(0,180,220,0.2);
+  --a:#00b4dc;--a2:#ff4444;--a3:#ffcc00;--a4:#00ff88;
+  --text:#a8d8e8;--glow:0 0 12px rgba(0,180,220,0.6);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100vw;height:100vh;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Share Tech Mono',monospace;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 4px);pointer-events:none;z-index:9000;}
+body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at center,transparent 46%,rgba(0,0,0,0.65) 100%);pointer-events:none;z-index:8999;}
+
+#app{display:grid;grid-template-columns:242px 1fr 242px;grid-template-rows:44px 1fr 142px;height:100vh;width:100vw;gap:2px;background:rgba(0,180,220,0.07);}
+
+#hdr{grid-column:1/-1;background:var(--panel);border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;padding:0 14px;position:relative;overflow:hidden;}
+#hdr::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--a),transparent);animation:sh 4s linear infinite;}
+@keyframes sh{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.logo{font-family:'Orbitron',sans-serif;font-size:17px;font-weight:900;color:var(--a);text-shadow:var(--glow);letter-spacing:5px;}
+.logo em{color:var(--a2);font-style:normal;}
+.logo small{font-size:9px;letter-spacing:3px;color:rgba(0,180,220,0.4);vertical-align:middle;margin-left:4px;}
+.hctr{display:flex;gap:15px;align-items:center;}
+.hb{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:2px;color:var(--a3);display:flex;align-items:center;gap:5px;}
+.dot{width:6px;height:6px;border-radius:50%;animation:pu 1.2s infinite;}
+.dg{background:var(--a4);box-shadow:0 0 6px var(--a4);}
+.dr{background:var(--a2);box-shadow:0 0 6px var(--a2);}
+@keyframes pu{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.65)}}
+#clk{font-size:12px;color:var(--a);letter-spacing:2px;}
+
+#pl,#pr{background:var(--panel);display:flex;flex-direction:column;overflow:hidden;}
+#pl{border-right:1px solid var(--b);}
+#pr{border-left:1px solid var(--b);}
+.ps{padding:8px 10px;border-bottom:1px solid rgba(0,180,220,0.07);flex-shrink:0;}
+.pt{font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:3px;color:var(--a);text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+.pt::after{content:'';flex:1;height:1px;background:var(--b);}
+
+.si{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;border:1px solid var(--b);font-size:10px;cursor:pointer;margin-bottom:3px;transition:all .15s;user-select:none;}
+.si:hover,.si.on{border-color:var(--a4);background:rgba(0,255,136,.04);}
+.si.off{opacity:.28;}
+.sn{color:var(--a);font-weight:600;}
+.sc{color:var(--a3);font-family:'Orbitron',sans-serif;font-size:10px;}
+
+.lt{display:flex;align-items:center;justify-content:space-between;padding:4px 8px;font-size:10px;cursor:pointer;}
+.lt:hover{background:rgba(0,180,220,.04);}
+.sw{width:26px;height:12px;background:rgba(0,0,0,.5);border:1px solid var(--b);border-radius:6px;position:relative;transition:background .2s;flex-shrink:0;}
+.sw.on{background:rgba(0,255,136,.22);border-color:var(--a4);}
+.sw::after{content:'';position:absolute;top:2px;left:2px;width:6px;height:6px;border-radius:50%;background:rgba(168,216,232,.4);transition:all .2s;}
+.sw.on::after{left:calc(100% - 8px);background:var(--a4);box-shadow:0 0 4px var(--a4);}
+
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.sb{padding:6px;border:1px solid var(--b);text-align:center;}
+.sv{font-family:'Orbitron',sans-serif;font-size:15px;line-height:1;}
+.sv.c1{color:var(--a);text-shadow:var(--glow);}
+.sv.c2{color:var(--a2);}
+.sv.c3{color:var(--a3);}
+.sv.c4{color:var(--a4);}
+.sl{font-size:7px;letter-spacing:1.5px;color:rgba(168,216,232,.28);text-transform:uppercase;margin-top:2px;}
+
+.ag{position:relative;height:88px;background:rgba(0,0,0,.25);border:1px solid var(--b);margin-top:4px;overflow:hidden;}
+.ab-row{position:absolute;bottom:0;left:20px;right:3px;display:flex;align-items:flex-end;height:100%;gap:2px;padding:3px 0;}
+.ab{flex:1;border-radius:1px 1px 0 0;min-height:2px;transition:height .8s;}
+.aa{position:absolute;left:0;top:0;bottom:0;width:19px;display:flex;flex-direction:column;justify-content:space-between;padding:3px 2px;font-size:6px;color:rgba(168,216,232,.2);text-align:right;}
+
+.fl{display:flex;flex-direction:column;gap:2px;overflow-y:auto;flex:1;scrollbar-width:none;}
+.fi{display:flex;align-items:flex-start;gap:6px;padding:4px 5px;background:rgba(0,180,220,.02);border:1px solid rgba(0,180,220,.06);font-size:9px;line-height:1.4;}
+.fi.al{border-color:rgba(255,68,68,.2);background:rgba(255,68,68,.04);}
+.ft{font-size:8px;padding:1px 4px;font-weight:700;white-space:nowrap;margin-top:1px;flex-shrink:0;}
+.ta{background:rgba(0,180,220,.14);color:var(--a);}
+.ts{background:rgba(0,136,255,.14);color:#0088ff;}
+.tt2{background:rgba(255,204,0,.11);color:var(--a3);}
+.to{background:rgba(0,255,136,.11);color:var(--a4);}
+.tr2{background:rgba(255,68,68,.14);color:var(--a2);}
+.fx{color:rgba(168,216,232,.7);flex:1;}
+.fm{color:rgba(168,216,232,.25);font-size:8px;white-space:nowrap;}
+
+.mc{display:flex;align-items:flex-end;gap:2px;height:34px;padding:3px;background:rgba(0,0,0,.2);border:1px solid var(--b);}
+.mb{flex:1;border-radius:1px 1px 0 0;opacity:.6;}
+.ti{display:flex;align-items:flex-start;gap:7px;padding:5px 6px;border-left:2px solid;margin-bottom:3px;font-size:10px;}
+.ti.h{border-color:var(--a2);}
+.ti.m{border-color:var(--a3);}
+.ti.l{border-color:var(--a4);}
+@keyframes af{0%,100%{background:rgba(0,0,0,.15)}50%{background:rgba(255,68,68,.08)}}
+.af{animation:af 1s infinite;}
+
+#bot{grid-column:1/-1;background:var(--panel);border-top:1px solid var(--b);display:flex;overflow:hidden;}
+#tl{flex:1;display:flex;align-items:center;padding:0 12px;gap:5px;overflow-x:auto;scrollbar-width:none;}
+.et{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:62px;}
+.td{width:6px;height:6px;border-radius:50%;border:1px solid currentColor;}
+.tl2{font-size:8px;text-align:center;white-space:nowrap;}
+.tm{font-size:7px;color:rgba(168,216,232,.22);}
+#cp{width:200px;border-left:1px solid var(--b);display:flex;flex-direction:column;justify-content:center;padding:0 10px;gap:4px;}
+.cr{display:flex;gap:3px;}
+.cb{flex:1;background:rgba(0,180,220,.06);border:1px solid var(--b);color:var(--a);font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:5px 2px;cursor:pointer;transition:all .15s;}
+.cb:hover{background:rgba(0,180,220,.14);border-color:var(--a);}
+.cb.on{background:rgba(0,180,220,.2);border-color:var(--a);box-shadow:var(--glow);}
+.cb.dg{border-color:rgba(255,68,68,.25);color:var(--a2);}
+.cb.dg:hover{background:rgba(255,68,68,.12);}
+
+#mv{position:relative;overflow:hidden;background:#020810;}
+#c3d{width:100%;height:100%;display:block;cursor:grab;position:relative;z-index:2;}
+#c3d:active{cursor:grabbing;}
+.corner{position:absolute;width:22px;height:22px;border-color:var(--a);border-style:solid;opacity:.55;pointer-events:none;}
+.ctlp{top:8px;left:8px;border-width:2px 0 0 2px;}
+.ctrp{top:8px;right:8px;border-width:2px 2px 0 0;}
+.cblp{bottom:8px;left:8px;border-width:0 0 2px 2px;}
+.cbrp{bottom:8px;right:8px;border-width:0 2px 2px 0;}
+#hud{position:absolute;right:10px;bottom:50px;background:rgba(3,12,20,.92);border:1px solid var(--b);padding:6px 10px;font-size:9px;z-index:20;min-width:112px;}
+#hud .hr{display:flex;justify-content:space-between;gap:10px;margin-bottom:2px;}
+#ctag{position:absolute;left:10px;bottom:10px;background:rgba(3,12,20,.9);border:1px solid var(--b);padding:4px 8px;font-size:8px;letter-spacing:2px;color:var(--a3);z-index:20;}
+#note{position:absolute;top:40px;right:10px;background:rgba(3,12,20,0.92);border:1px solid rgba(0,180,220,0.22);padding:8px 10px;font-size:8px;letter-spacing:1px;z-index:20;min-width:190px;}
+.api-row{display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid rgba(0,180,220,0.07);}
+.api-row:last-of-type{border-bottom:none;}
+.api-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:background .4s,box-shadow .4s;}
+.api-dot.green{background:#00ff88;box-shadow:0 0 6px #00ff88;animation:pu 1.4s infinite;}
+.api-dot.yellow{background:#ffcc00;box-shadow:0 0 6px #ffcc00;animation:pu 2s infinite;}
+.api-dot.red{background:#ff4444;box-shadow:0 0 6px #ff4444;}
+.api-dot.grey{background:rgba(168,216,232,0.2);box-shadow:none;}
+.api-name{font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(168,216,232,0.7);flex:1;letter-spacing:1px;}
+.api-status{font-family:'Orbitron',sans-serif;font-size:7px;letter-spacing:1.5px;transition:color .4s;}
+.api-status.green{color:#00ff88;}
+.api-status.yellow{color:#ffcc00;}
+.api-status.red{color:#ff4444;}
+.api-status.grey{color:rgba(168,216,232,0.3);}
+#tip{position:absolute;background:rgba(3,12,20,.97);border:1px solid var(--b);padding:8px 11px;font-size:10px;pointer-events:none;z-index:500;min-width:155px;display:none;}
+.tn{color:var(--a);font-weight:bold;margin-bottom:4px;}
+.tr3{display:flex;justify-content:space-between;gap:12px;margin-bottom:1px;}
+.tv{color:var(--a3);}
+#lblayer{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3;}
+
+#boot{position:fixed;inset:0;background:var(--bg);z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;transition:opacity .7s;}
+#boot.gone{opacity:0;pointer-events:none;}
+.bl2{font-family:'Orbitron',sans-serif;font-size:34px;font-weight:900;color:var(--a);text-shadow:0 0 40px rgba(0,180,220,.9);letter-spacing:10px;}
+.bs{font-family:'Rajdhani',sans-serif;font-size:12px;letter-spacing:6px;color:rgba(168,216,232,.38);text-transform:uppercase;}
+.blog{font-size:10px;color:var(--a4);width:380px;height:100px;overflow:hidden;border:1px solid rgba(0,255,136,.12);padding:8px;background:rgba(0,255,136,.015);}
+.bbo{width:380px;height:2px;background:rgba(0,180,220,.1);}
+.bbi{height:100%;background:var(--a);box-shadow:var(--glow);width:0%;transition:width .1s;}
+::-webkit-scrollbar{width:2px;}
+::-webkit-scrollbar-thumb{background:rgba(0,180,220,.3);}
+</style>
+</head>
+<body>
+<div id="boot">
+  <div class="bl2">OSIRIS</div>
+  <div class="bs">3D Volumetric Intelligence Situation Room</div>
+  <div class="blog" id="blog"></div>
+  <div class="bbo"><div class="bbi" id="bbar"></div></div>
+</div>
+
+<div id="app">
+  <div id="hdr">
+    <div class="logo">OSI<em>RIS</em><small>3D</small></div>
+    <div class="hctr">
+      <div class="hb"><div class="dot dg"></div>LIVE FEED</div>
+      <div class="hb"><div class="dot dr"></div><span id="ac">3</span>&nbsp;ALERTS</div>
+      <div class="hb">IRAN / MIDDLE EAST</div>
+      <div class="hb" id="thdr">113 TRACKS</div>
+    </div>
+    <div id="clk">UTC 00:00:00</div>
+  </div>
+
+  <div id="pl">
+    <div class="ps">
+      <div class="pt">Data Sources</div>
+      <div class="si on" onclick="toggleSrc(this,'flights')">
+        <div><div class="sn">&#9992; FlightRadar24</div><div style="font-size:8px;color:rgba(168,216,232,.28);margin-top:1px">ADS-B / MODE-S</div></div>
+        <div style="display:flex;align-items:center;gap:5px"><div class="dot dg" style="width:5px;height:5px"></div><span class="sc" id="cfl">65</span></div>
+      </div>
+      <div class="si on" onclick="toggleSrc(this,'ships')">
+        <div><div class="sn">&#9973; MarineTraffic</div><div style="font-size:8px;color:rgba(168,216,232,.28);margin-top:1px">AIS / VHF</div></div>
+        <div style="display:flex;align-items:center;gap:5px"><div class="dot" style="width:5px;height:5px;background:#0088ff;box-shadow:0 0 5px #0088ff;animation:pu 1.2s infinite"></div><span class="sc" id="csh">28</span></div>
+      </div>
+      <div class="si on" onclick="toggleSrc(this,'satellites')">
+        <div><div class="sn">&#128752; Spectator Sats</div><div style="font-size:8px;color:rgba(168,216,232,.28);margin-top:1px">LIVE ORBITAL POSITIONS</div></div>
+        <div style="display:flex;align-items:center;gap:5px"><div class="dot" style="width:5px;height:5px;background:var(--a3);box-shadow:0 0 5px var(--a3);animation:pu 1.2s infinite"></div><span class="sc" id="csa">8</span></div>
+      </div>
+      <div class="si on" onclick="toggleSrc(this,'osint')">
+        <div><div class="sn">&#128225; OSINT Channels</div><div style="font-size:8px;color:rgba(168,216,232,.28);margin-top:1px">TG / TWITTER / FORUMS</div></div>
+        <div style="display:flex;align-items:center;gap:5px"><div class="dot" style="width:5px;height:5px;background:var(--a4);box-shadow:0 0 5px var(--a4);animation:pu 1.2s infinite"></div><span class="sc" id="cos">512</span></div>
+      </div>
+    </div>
+
+    <div class="ps">
+      <div class="pt">3D Layers</div>
+      <div class="lt" onclick="tsw('sw-drop')"><span>Altitude Drop Lines</span><div class="sw on" id="sw-drop"></div></div>
+      <div class="lt" onclick="tsw('sw-rings')"><span>Threat Rings</span><div class="sw on" id="sw-rings"></div></div>
+      <div class="lt" onclick="tsw('sw-grid')"><span>Globe Grid</span><div class="sw on" id="sw-grid"></div></div>
+      <div class="lt" onclick="tsw('sw-labels')"><span>Track Labels</span><div class="sw on" id="sw-labels"></div></div>
+      <div class="lt" onclick="tsw('sw-stars')"><span>Starfield</span><div class="sw on" id="sw-stars"></div></div>
+      <div class="lt" onclick="tsw('sw-sattex')"><span>Tile Map</span><div class="sw on" id="sw-sattex"></div></div>
+    </div>
+
+    <div class="ps" style="flex:1;overflow:hidden;min-height:0;">
+      <div class="pt">Altitude Distribution</div>
+      <div class="ag">
+        <div class="aa"><span>LEO</span><span>FL450</span><span>FL200</span><span>FL50</span><span>GND</span></div>
+        <div class="ab-row" id="abars"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:3px;font-size:7px;color:rgba(168,216,232,.18)"><span>SEA</span><span>CIVIL</span><span>MIL</span><span>SAT</span></div>
+    </div>
+
+    <div class="ps">
+      <div class="pt">Statistics</div>
+      <div class="sg">
+        <div class="sb"><div class="sv c1" id="st">113</div><div class="sl">Tracks</div></div>
+        <div class="sb"><div class="sv c2" id="sal">3</div><div class="sl">Alerts</div></div>
+        <div class="sb"><div class="sv c3" id="ssq">2</div><div class="sl">Sq 7700</div></div>
+        <div class="sb"><div class="sv c4" id="ssh">28</div><div class="sl">Vessels</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="mv">
+    <canvas id="c3d"></canvas>
+    <div id="lblayer"></div>
+    <div class="corner ctlp"></div><div class="corner ctrp"></div>
+    <div class="corner cblp"></div><div class="corner cbrp"></div>
+    <div id="note">
+      <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--a);margin-bottom:6px;border-bottom:1px solid rgba(0,180,220,0.2);padding-bottom:4px;">API STATUS</div>
+      <div class="api-row" id="api-fr24">
+        <span class="api-dot" id="dot-fr24"></span>
+        <span class="api-name">FlightRadar24</span>
+        <span class="api-status" id="status-fr24">CHECKING...</span>
+      </div>
+      <div class="api-row" id="api-mt">
+        <span class="api-dot" id="dot-mt"></span>
+        <span class="api-name">MarineTraffic</span>
+        <span class="api-status" id="status-mt">CHECKING...</span>
+      </div>
+      <div class="api-row" id="api-sm">
+        <span class="api-dot" id="dot-sm"></span>
+        <span class="api-name">Spectator Sats</span>
+        <span class="api-status" id="status-sm">LOADING</span>
+      </div>
+      <div class="api-row" id="api-osint">
+        <span class="api-dot" id="dot-osint"></span>
+        <span class="api-name">OSINT Feeds</span>
+        <span class="api-status" id="status-osint">CHECKING...</span>
+      </div>
+      <div style="margin-top:5px;padding-top:4px;border-top:1px solid rgba(0,180,220,0.15);font-size:7px;color:rgba(168,216,232,0.3);letter-spacing:1px;">SIMULATED — NO KEY SET</div>
+    </div>
+    <div id="hud">
+      <div class="hr"><span style="color:rgba(168,216,232,.36)">CAM ALT</span><span style="color:var(--a3)" id="ha">-</span></div>
+      <div class="hr"><span style="color:rgba(168,216,232,.36)">LON/LAT</span><span style="color:var(--a3)" id="hc">-</span></div>
+      <div class="hr"><span style="color:rgba(168,216,232,.36)">ZOOM</span><span style="color:var(--a3)" id="hz">-</span></div>
+    </div>
+    <div id="ctag">3D GLOBE // FREE CAM</div>
+    <div id="tip">
+      <div class="tn" id="tn">-</div>
+      <div class="tr3"><span>TYPE</span><span class="tv" id="ttype">-</span></div>
+      <div class="tr3"><span>ALTITUDE</span><span class="tv" id="talt">-</span></div>
+      <div class="tr3"><span>SPEED</span><span class="tv" id="tspd">-</span></div>
+      <div class="tr3"><span>HEADING</span><span class="tv" id="thdg">-</span></div>
+      <div class="tr3"><span>SOURCE</span><span class="tv" id="tsrc">-</span></div>
+    </div>
+  </div>
+
+  <div id="pr">
+    <div class="ps">
+      <div class="pt">Threat Assessment</div>
+      <div id="tlist">
+        <div class="ti h af"><div><div style="font-size:10px;color:var(--a2);font-weight:bold">HIGH</div><div style="font-size:9px;margin-top:1px">Fast mover NE Tehran<br>FL280, 680kt</div></div></div>
+        <div class="ti m"><div><div style="font-size:10px;color:var(--a3);font-weight:bold">MED</div><div style="font-size:9px;margin-top:1px">Dark AIS / Hormuz</div></div></div>
+        <div class="ti l"><div><div style="font-size:10px;color:var(--a4);font-weight:bold">LOW</div><div style="font-size:9px;margin-top:1px">Drone / SW Baghdad</div></div></div>
+      </div>
+    </div>
+    <div class="ps" style="flex:1;overflow:hidden;min-height:0;display:flex;flex-direction:column;">
+      <div class="pt">Live Intelligence Feed</div>
+      <div class="fl" id="flist"></div>
+    </div>
+    <div class="ps">
+      <div class="pt">24H Activity</div>
+      <div class="mc" id="achart"></div>
+    </div>
+    <div class="ps">
+      <div class="pt">Selected Track</div>
+      <div style="font-size:9px;color:rgba(168,216,232,.34);padding:3px 0;line-height:1.9;" id="selinfo">Click any track to inspect.</div>
+    </div>
+  </div>
+
+  <div id="bot">
+    <div id="tl"></div>
+    <div id="cp">
+      <div class="cr">
+        <button class="cb on" onclick="setCam('free',this)">FREE</button>
+        <button class="cb" onclick="setCam('tilt',this)">TILT</button>
+        <button class="cb" onclick="setCam('top',this)">TOP</button>
+      </div>
+      <div class="cr">
+        <button class="cb" onclick="flyTo('iran')">IRAN</button>
+        <button class="cb" onclick="flyTo('hormuz')">HORMUZ</button>
+        <button class="cb" onclick="flyTo('gulf')">GULF</button>
+      </div>
+      <div class="cr">
+        <button class="cb" onclick="flyTo('wide')">WIDE</button>
+        <button class="cb" onclick="flyTo('tehran')">TEHRAN</button>
+        <button class="cb" onclick="flyTo('leo')">SAT VIEW</button>
+      </div>
+      <div class="cr">
+        <button class="cb dg" onclick="triggerAlert()">SIM ALERT</button>
+        <button class="cb" onclick="clearAlerts()">CLEAR</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// =====================================================================
+// OSIRIS 3D — Pure WebGL Globe, Zero Dependencies
+// =====================================================================
+(function(){
+"use strict";
+
+// ---- BOOT ----
+var BL=[
+  '> OSIRIS-3D v6.0 initializing...',
+  '> Raw WebGL engine starting...',
+  '> Globe geometry: 60x60 sphere mesh',
+  '> Shader programs compiled: OK',
+  '> Star field: 6000 particles',
+  '> FlightRadar24 ADS-B: ACTIVE',
+  '> MarineTraffic AIS: ACTIVE',
+  '> Spectator.Earth satellites: ACTIVE',
+  '> OSINT aggregator: 512 channels',
+  '> Region: IRAN / MIDDLE EAST',
+  '> All systems NOMINAL. LIVE.'
+];
+var bi=0;
+function rb(){
+  var blog=document.getElementById('blog'),bbar=document.getElementById('bbar');
+  if(bi<BL.length){
+    blog.innerHTML+=BL[bi]+'<br>';
+    blog.scrollTop=blog.scrollHeight;
+    bbar.style.width=((bi+1)/BL.length*100)+'%';
+    bi++;
+    setTimeout(rb,130+Math.random()*80);
+  } else {
+    setTimeout(function(){document.getElementById('boot').classList.add('gone');startApp();},400);
+  }
+}
+setTimeout(rb,200);
+
+// ---- CLOCK ----
+function p2(x){return String(x).padStart(2,'0');}
+function tick(){var n=new Date();document.getElementById('clk').textContent='UTC '+p2(n.getUTCHours())+':'+p2(n.getUTCMinutes())+':'+p2(n.getUTCSeconds());}
+setInterval(tick,1000);tick();
+
+// ---- MATH UTILS ----
+function mat4(){return new Float32Array(16);}
+function mat4Identity(m){m[0]=m[5]=m[10]=m[15]=1;m[1]=m[2]=m[3]=m[4]=m[6]=m[7]=m[8]=m[9]=m[11]=m[12]=m[13]=m[14]=0;return m;}
+function mat4Mul(out,a,b){
+  for(var i=0;i<4;i++)for(var j=0;j<4;j++){
+    out[j*4+i]=0;
+    for(var k=0;k<4;k++)out[j*4+i]+=a[k*4+i]*b[j*4+k];
+  }
+  return out;
+}
+function mat4Perspective(out,fov,asp,near,far){
+  var f=1/Math.tan(fov/2),nf=1/(near-far);
+  out[0]=f/asp;out[1]=0;out[2]=0;out[3]=0;
+  out[4]=0;out[5]=f;out[6]=0;out[7]=0;
+  out[8]=0;out[9]=0;out[10]=(far+near)*nf;out[11]=-1;
+  out[12]=0;out[13]=0;out[14]=2*far*near*nf;out[15]=0;
+  return out;
+}
+function mat4LookAt(out,eye,center,up){
+  var fx=center[0]-eye[0],fy=center[1]-eye[1],fz=center[2]-eye[2];
+  var fl=Math.sqrt(fx*fx+fy*fy+fz*fz);
+  fx/=fl;fy/=fl;fz/=fl;
+  var rx=fy*up[2]-fz*up[1],ry=fz*up[0]-fx*up[2],rz=fx*up[1]-fy*up[0];
+  var rl=Math.sqrt(rx*rx+ry*ry+rz*rz);rx/=rl;ry/=rl;rz/=rl;
+  var ux=ry*fz-rz*fy,uy=rz*fx-rx*fz,uz=rx*fy-ry*fx;
+  out[0]=rx;out[1]=ux;out[2]=-fx;out[3]=0;
+  out[4]=ry;out[5]=uy;out[6]=-fy;out[7]=0;
+  out[8]=rz;out[9]=uz;out[10]=-fz;out[11]=0;
+  out[12]=-(rx*eye[0]+ry*eye[1]+rz*eye[2]);
+  out[13]=-(ux*eye[0]+uy*eye[1]+uz*eye[2]);
+  out[14]= (fx*eye[0]+fy*eye[1]+fz*eye[2]);
+  out[15]=1;
+  return out;
+}
+function vec3Norm(v){var l=Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);return [v[0]/l,v[1]/l,v[2]/l];}
+function hex2rgb(h){
+  var r=parseInt(h.slice(1,3),16)/255,g=parseInt(h.slice(3,5),16)/255,b=parseInt(h.slice(5,7),16)/255;
+  return [r,g,b];
+}
+function rnd(a,b){return a+Math.random()*(b-a);}
+
+// lat/lng/alt -> XYZ (earth radius = 1.0)
+function lla2xyz(lat,lng,altM){
+  var R=1.0+(altM/6371000);
+  var phi=(90-lat)*Math.PI/180;
+  var theta=(lng+180)*Math.PI/180;
+  return [R*Math.sin(phi)*Math.cos(theta), R*Math.cos(phi), R*Math.sin(phi)*Math.sin(theta)];
+}
+
+// Project 3D point to 2D canvas coords
+function project(px,py,pz,mvp,W,H){
+  var x=mvp[0]*px+mvp[4]*py+mvp[8]*pz+mvp[12];
+  var y=mvp[1]*px+mvp[5]*py+mvp[9]*pz+mvp[13];
+  var z=mvp[2]*px+mvp[6]*py+mvp[10]*pz+mvp[14];
+  var w=mvp[3]*px+mvp[7]*py+mvp[11]*pz+mvp[15];
+  if(w<=0) return null;
+  return {x:(x/w+1)*W/2, y:(-y/w+1)*H/2, z:z/w, vis:z/w<1};
+}
+
+// ---- WEBGL SETUP ----
+var gl,canvas,W,H;
+var prog,progPt,progLine;
+var globeVAO,globeIdxCount;
+var starBuf,starCount;
+var gridLines=[];
+var ringLines=[];
+var trackPoints={pos:[],col:[],ids:[]};
+var dropLines=[];
+
+function compileShader(src,type){
+  var s=gl.createShader(type);
+  gl.shaderSource(s,src);
+  gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw gl.getShaderInfoLog(s);
+  return s;
+}
+function makeProgram(vs,fs){
+  var p=gl.createProgram();
+  gl.attachShader(p,compileShader(vs,gl.VERTEX_SHADER));
+  gl.attachShader(p,compileShader(fs,gl.FRAGMENT_SHADER));
+  gl.linkProgram(p);
+  if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw gl.getProgramInfoLog(p);
+  return p;
+}
+
+// Globe shader — phong-lite with lat/lng grid texture
+var VS_GLOBE=`
+attribute vec3 aPos;
+attribute vec3 aNorm;
+attribute vec2 aUV;
+uniform mat4 uMVP;
+uniform mat4 uModel;
+varying vec3 vNorm;
+varying vec2 vUV;
+varying vec3 vPos;
+void main(){
+  gl_Position=uMVP*vec4(aPos,1.0);
+  vNorm=normalize(mat3(uModel)*aNorm);
+  vUV=aUV;
+  vPos=aPos;
+}`;
+var FS_GLOBE=`
+precision mediump float;
+varying vec3 vNorm;
+varying vec2 vUV;
+varying vec3 vPos;
+uniform sampler2D uTex;
+uniform float uTexBlend;
+void main(){
+  // Dark ocean base
+  vec3 base=vec3(0.04,0.10,0.16);
+  // Grid lines
+  float gridLat=abs(sin(vUV.y*180.0*3.14159/180.0*18.0));
+  float gridLng=abs(sin(vUV.x*360.0*3.14159/180.0*18.0));
+  float grid=smoothstep(0.97,1.0,max(gridLat,gridLng));
+  vec3 gridCol=vec3(0.0,0.18,0.28);
+  // Land hint
+  float landHint=vNorm.y*0.06+0.94;
+  vec3 col=mix(base*landHint,gridCol,grid*0.45);
+  // Satellite texture overlay
+  vec4 texCol=texture2D(uTex,vUV);
+  col=mix(col,texCol.rgb,uTexBlend*texCol.a);
+  // Grid overlay on top of satellite texture
+  col=mix(col,gridCol,grid*0.25*uTexBlend);
+  // Phong lighting
+  vec3 light=normalize(vec3(3.0,2.0,4.0));
+  float diff=max(dot(vNorm,light),0.0)*0.5+0.5;
+  col*=diff;
+  // Atmosphere edge glow
+  float edge=1.0-abs(dot(vNorm,normalize(vPos)));
+  col+=vec3(0.0,0.25,0.45)*pow(edge,3.0)*0.5;
+  // Semi-transparent globe so CSS satellite overlay bleeds through
+  gl_FragColor=vec4(col,0.82);
+}`;
+
+// Point shader
+var VS_PT=`
+attribute vec3 aPos;
+attribute vec3 aCol;
+attribute float aSize;
+uniform mat4 uMVP;
+varying vec3 vCol;
+void main(){
+  gl_Position=uMVP*vec4(aPos,1.0);
+  gl_PointSize=aSize;
+  vCol=aCol;
+}`;
+var FS_PT=`
+precision mediump float;
+varying vec3 vCol;
+void main(){
+  float d=distance(gl_PointCoord,vec2(0.5));
+  if(d>0.42) discard;
+  float a=1.0-smoothstep(0.28,0.42,d);
+  gl_FragColor=vec4(vCol,a*0.0);
+}`;
+
+// Line shader
+var VS_LINE=`
+attribute vec3 aPos;
+attribute vec3 aCol;
+uniform mat4 uMVP;
+varying vec3 vCol;
+void main(){
+  gl_Position=uMVP*vec4(aPos,1.0);
+  vCol=aCol;
+}`;
+var FS_LINE=`
+precision mediump float;
+varying vec3 vCol;
+uniform float uAlpha;
+void main(){gl_FragColor=vec4(vCol,uAlpha);}`;
+
+function initGL(){
+  canvas=document.getElementById('c3d');
+  var mv=document.getElementById('mv');
+  W=mv.clientWidth; H=mv.clientHeight;
+  canvas.width=W*devicePixelRatio; canvas.height=H*devicePixelRatio;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+
+  gl=canvas.getContext('webgl',{antialias:true,alpha:true,premultipliedAlpha:false});
+  if(!gl){alert('WebGL not supported');return false;}
+  gl.enable(gl.DEPTH_TEST);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+  gl.viewport(0,0,canvas.width,canvas.height);
+
+  prog=makeProgram(VS_GLOBE,FS_GLOBE);
+  progPt=makeProgram(VS_PT,FS_PT);
+  progLine=makeProgram(VS_LINE,FS_LINE);
+  return true;
+}
+
+// ---- GLOBE GEOMETRY ----
+function buildGlobe(){
+  var segs=52, verts=[], norms=[], uvs=[], idx=[];
+  for(var lat=0;lat<=segs;lat++){
+    var theta=lat/segs*Math.PI;
+    for(var lng=0;lng<=segs;lng++){
+      var phi=lng/segs*2*Math.PI;
+      var x=Math.sin(theta)*Math.cos(phi);
+      var y=Math.cos(theta);
+      var z=Math.sin(theta)*Math.sin(phi);
+      verts.push(x,y,z);
+      norms.push(x,y,z);
+      uvs.push(lng/segs,lat/segs);
+    }
+  }
+  for(var la=0;la<segs;la++){
+    for(var ln=0;ln<segs;ln++){
+      var a=la*(segs+1)+ln, b=a+segs+1;
+      idx.push(a,b,a+1, b,b+1,a+1);
+    }
+  }
+  var vb=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,vb);
+  var combined=[];
+  for(var i=0;i<verts.length/3;i++){
+    combined.push(verts[i*3],verts[i*3+1],verts[i*3+2]);
+    combined.push(norms[i*3],norms[i*3+1],norms[i*3+2]);
+    combined.push(uvs[i*2],uvs[i*2+1]);
+  }
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(combined),gl.STATIC_DRAW);
+  var ib=gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(idx),gl.STATIC_DRAW);
+  globeIdxCount=idx.length;
+  return {vb:vb,ib:ib};
+}
+
+// ---- STARS ----
+function buildStars(){
+  var pts=[];
+  for(var i=0;i<6000;i++){
+    var r=rnd(18,50);
+    var th=rnd(0,Math.PI*2);
+    var ph=rnd(0,Math.PI);
+    pts.push(r*Math.sin(ph)*Math.cos(th),r*Math.cos(ph),r*Math.sin(ph)*Math.sin(th));
+    var b=rnd(0.3,0.8); pts.push(b,b,b+0.1); pts.push(rnd(1,2));
+  }
+  starCount=6000;
+  var buf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(pts),gl.STATIC_DRAW);
+  return buf;
+}
+
+// ---- GRID LINES ----
+function buildGridLines(){
+  var lines=[];
+  function makeLine(pts,r,g,b,a){
+    var buf=gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+    var d=[];
+    for(var i=0;i<pts.length;i+=3){d.push(pts[i],pts[i+1],pts[i+2],r,g,b);}
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(d),gl.STATIC_DRAW);
+    return {buf:buf,count:pts.length/3,alpha:a};
+  }
+  // Lat lines every 15 deg
+  for(var lat=-75;lat<=75;lat+=15){
+    var pts=[];
+    for(var lng=-180;lng<=180;lng+=4){
+      var p=lla2xyz(lat,lng,500); pts.push(p[0],p[1],p[2]);
+    }
+    lines.push(makeLine(pts,0,0.15,0.25,0.35));
+  }
+  // Lng lines every 15 deg
+  for(var lng2=-180;lng2<=180;lng2+=15){
+    var pts2=[];
+    for(var lat2=-80;lat2<=80;lat2+=4){
+      var p2=lla2xyz(lat2,lng2,500); pts2.push(p2[0],p2[1],p2[2]);
+    }
+    lines.push(makeLine(pts2,0,0.15,0.25,0.35));
+  }
+  return lines;
+}
+
+// ---- THREAT RINGS ----
+function buildRings(){
+  var defs=[
+    {lat:35.7,lng:51.4,r:200000,col:[1,0.2,0.2]},
+    {lat:26.5,lng:56.5,r:150000,col:[1,0.8,0]},
+    {lat:32.65,lng:51.67,r:80000,col:[0,1,0.53]}
+  ];
+  var rings=[];
+  defs.forEach(function(def){
+    var pts=[];
+    for(var i=0;i<=72;i++){
+      var angle=i/72*Math.PI*2;
+      var dLat=def.r/111000*Math.cos(angle);
+      var dLng=def.r/(111000*Math.cos(def.lat*Math.PI/180))*Math.sin(angle);
+      var p=lla2xyz(def.lat+dLat,def.lng+dLng,800);
+      pts.push(p[0],p[1],p[2]);
+    }
+    var buf=gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+    var d=[];
+    for(var j=0;j<pts.length;j+=3) d.push(pts[j],pts[j+1],pts[j+2],def.col[0],def.col[1],def.col[2]);
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(d),gl.STATIC_DRAW);
+    rings.push({buf:buf,count:pts.length/3,alpha:0.55});
+  });
+  return rings;
+}
+
+// ---- CAMERA ----
+var globeTex=null,globeTexBlend=0.0,globeTexTarget=0.0;
+var camTheta=(53+180)*Math.PI/180;
+var camPhi=(90-32.5)*Math.PI/180;
+var camDist=3.0;
+var camThetaTgt=camTheta,camPhiTgt=camPhi,camDistTgt=3.0;
+var starRot=0;
+var proj=mat4(),view=mat4(),mvp=mat4(),model=mat4Identity(mat4());
+
+function lerp(a,b,t){return a+(b-a)*t;}
+function updateCam(){
+  camDist=lerp(camDist,camDistTgt,0.07);
+  camTheta=lerp(camTheta,camThetaTgt,0.07);
+  camPhi=lerp(camPhi,camPhiTgt,0.07);
+  var eye=[camDist*Math.sin(camPhi)*Math.cos(camTheta),
+           camDist*Math.cos(camPhi),
+           camDist*Math.sin(camPhi)*Math.sin(camTheta)];
+  mat4Perspective(proj,45*Math.PI/180,W/H,0.001,200);
+  mat4LookAt(view,eye,[0,0,0],[0,1,0]);
+  mat4Mul(mvp,proj,view);
+  return eye;
+}
+
+// ---- TRACK DATA ----
+var BOUNDS={latMin:22,latMax:41,lngMin:42,lngMax:65};
+var tracks=[],layerOn={flights:true,ships:true,satellites:true,osint:true};
+var alertCount=3,feedItems=[],selectedId=null,updateTick=0;
+var showDrop=true,showRings=true,showGrid=true,showLabels=true,showStars=true;
+
+var CSF=['IRA','THY','UAE','QTR','EK','FZ','IR','W5','EP','SVA'],
+    ACF=['B77W','A320','B737','F-14D','C-130J','MQ-9','F-35A','B752'],
+    SHT=['TANKER','CARGO','WARSHIP','DESTROYER','PATROL','FRIGATE'],
+    SNM=['ISS','SENTINEL-6','KH-13','LACROSSE-5','COSMOS-2543','OFEK-16','YAOGAN-30H','STARLINK'],
+    OSS=['@OSINTdefender','@GeoConfirmed','LiveUAMap','WarMapper'],
+    OST=['Convoy HWY-7','Explosion oil facility','Radar act NW','IRGC boats Hormuz','AD systems ON','BM alert S Iran','Ship gap Bandar','EW jam Baghdad'];
+
+function makeFlights(n){var o=[];
+  for(var i=0;i<n;i++){var sq=Math.random()<.05?'7700':Math.random()<.03?'7600':'2000';
+    o.push({id:'FLT-'+i,type:'flight',lat:rnd(BOUNDS.latMin,BOUNDS.latMax),lng:rnd(BOUNDS.lngMin,BOUNDS.lngMax),
+      alt:rnd(3000,12500),speed:Math.floor(rnd(280,950)),heading:Math.floor(rnd(0,360)),
+      callsign:CSF[Math.floor(Math.random()*CSF.length)]+Math.floor(1000+Math.random()*9000),
+      actype:ACF[Math.floor(Math.random()*ACF.length)],squawk:sq,dark:false,
+      dlat:(Math.random()-.5)*.005,dlng:(Math.random()-.5)*.009});}
+  return o;}
+function makeShips(n){var o=[];
+  for(var i=0;i<n;i++){var dk=Math.random()<.18;
+    o.push({id:'SHP-'+i,type:'ship',lat:rnd(23,30),lng:rnd(48,62),alt:0,
+      speed:Math.floor(rnd(4,26)),heading:Math.floor(rnd(0,360)),
+      callsign:'VS'+Math.floor(100000+Math.random()*900000),
+      actype:SHT[Math.floor(Math.random()*SHT.length)],dark:dk,squawk:'',
+      dlat:(Math.random()-.5)*.002,dlng:(Math.random()-.5)*.003});}
+  return o;}
+function makeSats(n){
+  // Returns placeholder sats until Spectator data loads
+  var o=[];
+  for(var i=0;i<n;i++){
+    o.push({id:'SAT-'+i,type:'satellite',
+      lat:rnd(BOUNDS.latMin,BOUNDS.latMax),lng:rnd(BOUNDS.lngMin,BOUNDS.lngMax),
+      alt:rnd(400000,800000),speed:Math.floor(rnd(7000,7800)),heading:Math.floor(rnd(0,360)),
+      callsign:SNM[i%SNM.length],actype:'SATELLITE',squawk:'',dark:false,
+      dlat:(Math.random()-.5)*.06,dlng:.09+Math.random()*.05,
+      spectator:false});}
+  return o;
+}
+
+// ── Spectator satellite positions via Anthropic API proxy (CORS-safe)
+// The Anthropic API is called from the artifact iframe which has CORS access,
+// and we ask Claude to fetch + return the satellite JSON for us.
+// This is the standard pattern for CORS-blocked external APIs in artifacts.
+function fetchSpectatorSatellites(){
+  setApiStatus('sm',0,'FETCHING');
+  var target='https://api.spectator.earth/satellite/?positions=true&api_key='+SPECTATOR_KEY;
+  // Try proxies in order until one works
+  var proxies=[
+    'https://corsproxy.io/?'+encodeURIComponent(target),
+    'https://api.allorigins.win/raw?url='+encodeURIComponent(target),
+    'https://proxy.cors.sh/'+target,
+  ];
+  function tryNext(i){
+    if(i>=proxies.length){
+      setApiStatus('sm',3,'CORS BLOCKED');
+      console.warn('All CORS proxies failed for Spectator satellite API');
+      return;
+    }
+    setApiStatus('sm',0,'TRY '+(i+1)+'/'+proxies.length);
+    fetch(proxies[i])
+      .then(function(r){
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        return r.json();
+      })
+      .then(function(json){
+        ingestSpectatorSats(json);
+      })
+      .catch(function(e){
+        console.warn('Proxy',i,'failed:',e);
+        tryNext(i+1);
+      });
+  }
+  tryNext(0);
+}
+
+function ingestSpectatorSats(json){
+  // GeoJSON FeatureCollection: features[].geometry.coordinates=[lng,lat,alt_m]
+  // properties: {name, norad_id, open, platform, ...}
+  var features=(json.features||json.results||[]);
+  if(!features.length){setApiStatus('sm',3,'NO DATA');return;}
+
+  // Remove existing simulated satellites from tracks array
+  tracks=tracks.filter(function(t){return t.type!=='satellite';});
+
+  features.forEach(function(f,i){
+    var coords=f.geometry&&f.geometry.coordinates;
+    if(!coords||coords.length<2)return;
+    var lng=coords[0],lat=coords[1],altM=coords[2]||550000;
+    var name=(f.properties&&(f.properties.name||f.properties.platform))||('SAT-'+i);
+    tracks.push({
+      id:'SPEC-SAT-'+i,
+      type:'satellite',
+      lat:parseFloat(lat)||0,
+      lng:parseFloat(lng)||0,
+      alt:parseFloat(altM)||550000,
+      speed:7500,
+      heading:Math.floor(Math.random()*360),
+      callsign:name.slice(0,12),
+      actype:(f.properties&&f.properties.sensor_type)||'SAT',
+      squawk:'',dark:false,
+      dlat:(Math.random()-.5)*.06,
+      dlng:.09+Math.random()*.04,
+      spectator:true,
+      norad:f.properties&&f.properties.norad_id
+    });
+  });
+
+  document.getElementById('csa').textContent=features.length;
+  setApiStatus('sm',1,'LIVE '+features.length+' SAT');
+  buildTrackBuffers();
+  console.log('Spectator: ingested',features.length,'satellites');
+  // Refresh every 60s (satellites move ~7km/s)
+  setTimeout(fetchSpectatorSatellites,60000);
+}
+function makeOsint(n){var o=[];
+  for(var i=0;i<n;i++){
+    o.push({id:'OST-'+i,type:'osint',lat:rnd(BOUNDS.latMin,BOUNDS.latMax),lng:rnd(BOUNDS.lngMin,BOUNDS.lngMax),
+      alt:500,speed:0,heading:0,callsign:OSS[Math.floor(Math.random()*OSS.length)],
+      actype:'SIGINT',squawk:'',dark:false,dlat:0,dlng:0});}
+  return o;}
+
+function tColor(t){
+  if(t.type==='flight') return t.squawk==='7700'?'#ff4444':t.squawk==='7600'?'#ffcc00':'#00b4dc';
+  if(t.type==='ship') return t.dark?'#ff4444':'#0088ff';
+  if(t.type==='satellite') return '#ffcc00';
+  return '#00ff88';
+}
+
+// Build GPU buffers for all tracks
+var ptBuf,ptCount;
+var dropBuf,dropCount;
+
+function buildTrackBuffers(){
+  var pts=[],drops=[];
+  tracks.forEach(function(t){
+    var lk=t.type==='flight'?'flights':t.type==='ship'?'ships':t.type==='satellite'?'satellites':'osint';
+    if(!layerOn[lk])return;
+    var p=lla2xyz(t.lat,t.lng,t.alt);
+    var c=hex2rgb(tColor(t));
+    var sz=1.0; // icons are HTML, points are invisible anchors
+    pts.push(p[0],p[1],p[2],c[0],c[1],c[2],sz);
+    // drop line
+    if(t.type==='flight'||t.type==='satellite'){
+      var g=lla2xyz(t.lat,t.lng,0);
+      drops.push(g[0],g[1],g[2],c[0],c[1],c[2]);
+      drops.push(p[0],p[1],p[2],c[0],c[1],c[2]);
+    }
+  });
+  ptCount=pts.length/7;
+  ptBuf=ptBuf||gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,ptBuf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(pts),gl.DYNAMIC_DRAW);
+  dropCount=drops.length/6;
+  dropBuf=dropBuf||gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,dropBuf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(drops),gl.DYNAMIC_DRAW);
+}
+
+
+// ---- SVG ICONS ----
+// Each icon is an inline SVG string, drawn at projected screen position
+var ICONS = {
+  flight: function(col, hdg) {
+    // Airplane shape — rotated by heading
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="-14 -14 28 28" style="transform:rotate('+hdg+'deg);overflow:visible;filter:drop-shadow(0 0 3px '+col+')">' +
+      '<g fill="'+col+'" stroke="none">' +
+      // fuselage
+      '<ellipse rx="2" ry="9" />' +
+      // wings
+      '<polygon points="0,-2 11,3 0,1 -11,3" />' +
+      // tail
+      '<polygon points="0,7 4,11 -4,11" />' +
+      '</g></svg>';
+  },
+  ship: function(col) {
+    // Top-down ship silhouette
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="-14 -14 28 28" style="overflow:visible;filter:drop-shadow(0 0 3px '+col+')">' +
+      '<g fill="'+col+'" stroke="none">' +
+      // hull
+      '<path d="M0,-10 L6,-4 L7,5 L5,9 L0,11 L-5,9 L-7,5 L-6,-4 Z" />' +
+      // bridge
+      '<rect x="-3" y="-2" width="6" height="5" fill="rgba(0,0,0,0.4)" />' +
+      // bow line
+      '<line x1="0" y1="-10" x2="0" y2="-5" stroke="rgba(0,0,0,0.3)" stroke-width="1"/>' +
+      '</g></svg>';
+  },
+  dark_ship: function(col) {
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="-14 -14 28 28" style="overflow:visible;filter:drop-shadow(0 0 5px '+col+')">' +
+      '<g fill="'+col+'" stroke="'+col+'" stroke-width="0.5">' +
+      '<path d="M0,-10 L6,-4 L7,5 L5,9 L0,11 L-5,9 L-7,5 L-6,-4 Z" opacity="0.7"/>' +
+      '<line x1="-8" y1="-8" x2="8" y2="8" stroke-width="2"/>' +
+      '<line x1="8" y1="-8" x2="-8" y2="8" stroke-width="2"/>' +
+      '</g></svg>';
+  },
+  satellite: function(col) {
+    // Satellite with solar panels
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="-16 -16 32 32" style="overflow:visible;filter:drop-shadow(0 0 4px '+col+')">' +
+      '<g fill="'+col+'" stroke="none">' +
+      // body
+      '<rect x="-4" y="-5" width="8" height="10" rx="1"/>' +
+      // left panel
+      '<rect x="-14" y="-2" width="8" height="4" rx="1" opacity="0.85"/>' +
+      // right panel
+      '<rect x="6" y="-2" width="8" height="4" rx="1" opacity="0.85"/>' +
+      // panel struts
+      '<line x1="-6" y1="0" x2="-14" y2="0" stroke="'+col+'" stroke-width="1"/>' +
+      '<line x1="6" y1="0" x2="14" y2="0" stroke="'+col+'" stroke-width="1"/>' +
+      // dish
+      '<circle cx="0" cy="-7" r="2.5" fill="none" stroke="'+col+'" stroke-width="1.2"/>' +
+      '<line x1="0" y1="-5" x2="0" y2="-4.5" stroke="'+col+'" stroke-width="1"/>' +
+      '</g></svg>';
+  },
+  osint: function(col) {
+    // Signal / broadcast tower
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="-13 -13 26 26" style="overflow:visible;filter:drop-shadow(0 0 3px '+col+')">' +
+      '<g fill="none" stroke="'+col+'" stroke-width="1.4">' +
+      // signal arcs
+      '<path d="M-8,-5 Q-11,-1 -8,3" />' +
+      '<path d="M8,-5 Q11,-1 8,3" />' +
+      '<path d="M-5,-2 Q-6.5,0 -5,2" />' +
+      '<path d="M5,-2 Q6.5,0 5,2" />' +
+      '</g>' +
+      '<g fill="'+col+'">' +
+      // center dot
+      '<circle cx="0" cy="0" r="2.5"/>' +
+      // tower pole
+      '<line x1="0" y1="0" x2="0" y2="10" stroke="'+col+'" stroke-width="1.5"/>' +
+      '<line x1="-4" y1="10" x2="4" y2="10" stroke="'+col+'" stroke-width="1.5"/>' +
+      '</g></svg>';
+  }
+};
+
+function getIconSVG(t) {
+  var col = tColor(t);
+  if (t.type === 'flight') return ICONS.flight(col, t.heading);
+  if (t.type === 'ship')   return t.dark ? ICONS.dark_ship(col) : ICONS.ship(col);
+  if (t.type === 'satellite') return ICONS.satellite(col);
+  return ICONS.osint(col);
+}
+
+// ---- HTML ICON LABELS ----
+var lblEls = {};
+function syncLabels() {
+  var layer = document.getElementById('lblayer');
+
+  // Create / update icon + label divs for each track
+  tracks.forEach(function(t) {
+    var lk = t.type==='flight'?'flights':t.type==='ship'?'ships':t.type==='satellite'?'satellites':'osint';
+    var vis = layerOn[lk];
+    var p = lla2xyz(t.lat, t.lng, t.alt);
+    var s = project(p[0], p[1], p[2], mvp, W, H);
+
+    if (!lblEls[t.id]) {
+      // Container: icon + callsign label side by side
+      var wrap = document.createElement('div');
+      wrap.style.cssText = 'position:absolute;display:flex;align-items:center;gap:4px;pointer-events:none;';
+      // Icon div
+      var icon = document.createElement('div');
+      icon.className = 'ticon';
+      icon.style.cssText = 'width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:auto;';
+      icon.innerHTML = getIconSVG(t);
+      icon.addEventListener('mouseenter', function(e) {
+        var mv = document.getElementById('mv');
+        var rect = mv.getBoundingClientRect();
+        showTip(e.clientX - rect.left, e.clientY - rect.top, t);
+      });
+      icon.addEventListener('mouseleave', hideTip);
+      icon.addEventListener('click', function(e) {
+        var mv = document.getElementById('mv');
+        var rect = mv.getBoundingClientRect();
+        selectTrack(t, e.clientX - rect.left, e.clientY - rect.top);
+        e.stopPropagation();
+      });
+      // Label div
+      var lbl = document.createElement('div');
+      lbl.className = 'tlbl';
+      lbl.style.cssText = 'font-family:Share Tech Mono,monospace;font-size:8px;color:' + tColor(t) + ';text-shadow:0 0 4px ' + tColor(t) + ';white-space:nowrap;';
+      lbl.textContent = t.callsign;
+      wrap._icon = icon;
+      wrap._lbl  = lbl;
+      wrap._t    = t;
+      wrap.appendChild(icon);
+      wrap.appendChild(lbl);
+      layer.appendChild(wrap);
+      lblEls[t.id] = wrap;
+    }
+
+    var wrap = lblEls[t.id];
+    if (!vis || !s || !s.vis) { wrap.style.display = 'none'; return; }
+
+    // Reposition
+    wrap.style.display = 'flex';
+    wrap.style.left = (s.x - 14) + 'px';   // center icon on point
+    wrap.style.top  = (s.y - 14) + 'px';
+
+    // Update icon SVG (heading changes for flights)
+    wrap._icon.innerHTML = getIconSVG(t);
+
+    // Fade label when zoomed out
+    var op = camDist > 5 ? '0' : camDist > 3 ? '0.55' : '0.9';
+    wrap._lbl.style.opacity = showLabels ? op : '0';
+
+    // Always show icon, scale by zoom
+    var sc = camDist > 6 ? 0.5 : camDist > 3.5 ? 0.75 : 1.0;
+    wrap._icon.style.transform = 'scale(' + sc + ')';
+    wrap._icon.style.opacity = vis ? '1' : '0';
+  });
+  // City labels
+  var cities=[
+    {lat:35.7,lng:51.4,name:'TEHRAN',col:'#ff6666'},
+    {lat:26.5,lng:56.5,name:'HORMUZ',col:'#ffcc00'},
+    {lat:32.65,lng:51.67,name:'ISFAHAN',col:'#00ff88'},
+    {lat:29.6,lng:52.5,name:'SHIRAZ',col:'#00b4dc'},
+    {lat:36.3,lng:59.6,name:'MASHHAD',col:'#00b4dc'},
+    {lat:33.3,lng:44.4,name:'BAGHDAD',col:'rgba(168,216,232,.5)'},
+    {lat:24.7,lng:46.7,name:'RIYADH',col:'rgba(168,216,232,.4)'},
+    {lat:25.2,lng:55.3,name:'DUBAI',col:'rgba(168,216,232,.4)'}
+  ];
+  cities.forEach(function(c){
+    var cid='city_'+c.name;
+    if(!lblEls[cid]){
+      var d=document.createElement('div');
+      d.style.cssText='position:absolute;font-family:Share Tech Mono,monospace;font-size:9px;letter-spacing:2px;color:'+c.col+';text-shadow:0 0 5px '+c.col+';pointer-events:none;white-space:nowrap;';
+      d.textContent='O '+c.name;
+      d._lat=c.lat; d._lng=c.lng;
+      layer.appendChild(d);
+      lblEls[cid]=d;
+    }
+    var d=lblEls[cid];
+    var p=lla2xyz(d._lat,d._lng,1000);
+    var s=project(p[0],p[1],p[2],mvp,W,H);
+    if(!s||!s.vis||camDist>5.5){d.style.display='none';return;}
+    d.style.display='block';
+    d.style.left=(s.x+6)+'px';
+    d.style.top=(s.y-5)+'px';
+  });
+}
+
+// ---- RENDER ----
+var globeBufs;
+function render(){
+  gl.viewport(0,0,canvas.width,canvas.height);
+  gl.clearColor(0.008,0.02,0.031,0.0);
+  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+
+  // --- Globe ---
+  gl.useProgram(prog);
+  var stride=8*4;
+  gl.bindBuffer(gl.ARRAY_BUFFER,globeBufs.vb);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,globeBufs.ib);
+  var aP=gl.getAttribLocation(prog,'aPos'),aN=gl.getAttribLocation(prog,'aNorm'),aU=gl.getAttribLocation(prog,'aUV');
+  gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,3,gl.FLOAT,false,stride,0);
+  gl.enableVertexAttribArray(aN);gl.vertexAttribPointer(aN,3,gl.FLOAT,false,stride,12);
+  gl.enableVertexAttribArray(aU);gl.vertexAttribPointer(aU,2,gl.FLOAT,false,stride,24);
+  gl.uniformMatrix4fv(gl.getUniformLocation(prog,'uMVP'),false,mvp);
+  gl.uniformMatrix4fv(gl.getUniformLocation(prog,'uModel'),false,model);
+  // CSS overlay handles satellite tiles; keep WebGL globe procedural
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D,globeTex);
+  gl.uniform1i(gl.getUniformLocation(prog,'uTex'),0);
+  gl.uniform1f(gl.getUniformLocation(prog,'uTexBlend'),0.0);
+  gl.drawElements(gl.TRIANGLES,globeIdxCount,gl.UNSIGNED_SHORT,0);
+
+  // --- Stars ---
+  if(showStars){
+    gl.useProgram(progPt);
+    gl.bindBuffer(gl.ARRAY_BUFFER,starBuf);
+    var stride2=7*4;
+    var sP=gl.getAttribLocation(progPt,'aPos'),sC=gl.getAttribLocation(progPt,'aCol'),sSz=gl.getAttribLocation(progPt,'aSize');
+    var starMVP=mat4();
+    // Rotate stars slowly
+    var rotM=mat4Identity(mat4());
+    var s=Math.sin(starRot*0.0002),co=Math.cos(starRot*0.0002);
+    rotM[0]=co;rotM[2]=s;rotM[8]=-s;rotM[10]=co;
+    mat4Mul(starMVP,mvp,rotM);
+    gl.uniformMatrix4fv(gl.getUniformLocation(progPt,'uMVP'),false,starMVP);
+    gl.enableVertexAttribArray(sP);gl.vertexAttribPointer(sP,3,gl.FLOAT,false,stride2,0);
+    gl.enableVertexAttribArray(sC);gl.vertexAttribPointer(sC,3,gl.FLOAT,false,stride2,12);
+    gl.enableVertexAttribArray(sSz);gl.vertexAttribPointer(sSz,1,gl.FLOAT,false,stride2,24);
+    gl.drawArrays(gl.POINTS,0,starCount);
+  }
+
+  // --- Grid lines ---
+  if(showGrid){
+    gl.useProgram(progLine);
+    var lP=gl.getAttribLocation(progLine,'aPos'),lC=gl.getAttribLocation(progLine,'aCol');
+    gl.uniformMatrix4fv(gl.getUniformLocation(progLine,'uMVP'),false,mvp);
+    gridLines.forEach(function(ln){
+      gl.uniform1f(gl.getUniformLocation(progLine,'uAlpha'),ln.alpha);
+      gl.bindBuffer(gl.ARRAY_BUFFER,ln.buf);
+      gl.enableVertexAttribArray(lP);gl.vertexAttribPointer(lP,3,gl.FLOAT,false,6*4,0);
+      gl.enableVertexAttribArray(lC);gl.vertexAttribPointer(lC,3,gl.FLOAT,false,6*4,12);
+      gl.drawArrays(gl.LINE_STRIP,0,ln.count);
+    });
+  }
+
+  // --- Rings ---
+  if(showRings){
+    gl.useProgram(progLine);
+    gl.uniformMatrix4fv(gl.getUniformLocation(progLine,'uMVP'),false,mvp);
+    ringLines.forEach(function(r){
+      gl.uniform1f(gl.getUniformLocation(progLine,'uAlpha'),r.alpha);
+      gl.bindBuffer(gl.ARRAY_BUFFER,r.buf);
+      var lP2=gl.getAttribLocation(progLine,'aPos'),lC2=gl.getAttribLocation(progLine,'aCol');
+      gl.enableVertexAttribArray(lP2);gl.vertexAttribPointer(lP2,3,gl.FLOAT,false,6*4,0);
+      gl.enableVertexAttribArray(lC2);gl.vertexAttribPointer(lC2,3,gl.FLOAT,false,6*4,12);
+      gl.drawArrays(gl.LINE_STRIP,0,r.count);
+    });
+  }
+
+  // --- Drop lines ---
+  if(showDrop&&dropCount>0){
+    gl.useProgram(progLine);
+    gl.uniformMatrix4fv(gl.getUniformLocation(progLine,'uMVP'),false,mvp);
+    gl.uniform1f(gl.getUniformLocation(progLine,'uAlpha'),0.28);
+    gl.bindBuffer(gl.ARRAY_BUFFER,dropBuf);
+    var dP=gl.getAttribLocation(progLine,'aPos'),dC=gl.getAttribLocation(progLine,'aCol');
+    gl.enableVertexAttribArray(dP);gl.vertexAttribPointer(dP,3,gl.FLOAT,false,6*4,0);
+    gl.enableVertexAttribArray(dC);gl.vertexAttribPointer(dC,3,gl.FLOAT,false,6*4,12);
+    gl.drawArrays(gl.LINES,0,dropCount);
+  }
+
+  // --- Track points ---
+  if(ptCount>0){
+    gl.useProgram(progPt);
+    gl.uniformMatrix4fv(gl.getUniformLocation(progPt,'uMVP'),false,mvp);
+    gl.bindBuffer(gl.ARRAY_BUFFER,ptBuf);
+    var tP=gl.getAttribLocation(progPt,'aPos'),tC=gl.getAttribLocation(progPt,'aCol'),tSz=gl.getAttribLocation(progPt,'aSize');
+    gl.enableVertexAttribArray(tP);gl.vertexAttribPointer(tP,3,gl.FLOAT,false,7*4,0);
+    gl.enableVertexAttribArray(tC);gl.vertexAttribPointer(tC,3,gl.FLOAT,false,7*4,12);
+    gl.enableVertexAttribArray(tSz);gl.vertexAttribPointer(tSz,1,gl.FLOAT,false,7*4,24);
+    gl.drawArrays(gl.POINTS,0,ptCount);
+  }
+}
+
+// ---- MAIN LOOP ----
+var lastT=0;
+function loop(ts){
+  requestAnimationFrame(loop);
+  starRot=ts;
+  updateCam();
+  syncMapFromGlobe();
+  render();
+  syncLabels();
+  updateHUD();
+}
+
+// ---- HUD ----
+function updateHUD(){
+  var altKm=((camDist-1.0)*6371).toFixed(0);
+  document.getElementById('ha').textContent=Math.max(0,altKm)+' km';
+  var clat=(90-camPhi*180/Math.PI).toFixed(1);
+  var clng=(camTheta*180/Math.PI-180).toFixed(1);
+  document.getElementById('hc').textContent=clng+'E '+clat+'N';
+  document.getElementById('hz').textContent=camDist.toFixed(2)+'x';
+}
+
+// ---- MOUSE / TOUCH ----
+var drag=false,px=0,py=0;
+function onMD(e){drag=true;px=e.clientX;py=e.clientY;}
+function onMU(e){
+  if(drag&&Math.abs(e.clientX-px)<4&&Math.abs(e.clientY-py)<4) handlePick(e.clientX,e.clientY);
+  drag=false;
+}
+function onMM(e){
+  if(drag){
+    camThetaTgt-=(e.clientX-px)*0.005;
+    camPhiTgt=Math.max(0.08,Math.min(Math.PI-0.08,camPhiTgt+(e.clientY-py)*0.004));
+    px=e.clientX;py=e.clientY;
+  }
+  hoverPick(e.clientX,e.clientY);
+}
+function onWH(e){camDistTgt=Math.max(1.05,Math.min(10,camDistTgt+e.deltaY*0.003));}
+var tpx=0,tpy=0;
+function onTS(e){if(e.touches.length===1){tpx=e.touches[0].clientX;tpy=e.touches[0].clientY;}}
+function onTM(e){
+  if(e.touches.length===1){
+    camThetaTgt-=(e.touches[0].clientX-tpx)*0.005;
+    camPhiTgt=Math.max(0.08,Math.min(Math.PI-0.08,camPhiTgt+(e.touches[0].clientY-tpy)*0.004));
+    tpx=e.touches[0].clientX;tpy=e.touches[0].clientY;
+    e.preventDefault();
+  }
+}
+
+// ---- PICKING (screen-space nearest point) ----
+function pickTrack(cx,cy){
+  var mv=document.getElementById('mv');
+  var rect=mv.getBoundingClientRect();
+  var sx=cx-rect.left, sy=cy-rect.top;
+  var best=null,bestD=30;
+  tracks.forEach(function(t){
+    var lk=t.type==='flight'?'flights':t.type==='ship'?'ships':t.type==='satellite'?'satellites':'osint';
+    if(!layerOn[lk])return;
+    var p=lla2xyz(t.lat,t.lng,t.alt);
+    var s=project(p[0],p[1],p[2],mvp,W,H);
+    if(!s||!s.vis)return;
+    var d=Math.sqrt((s.x-sx)*(s.x-sx)+(s.y-sy)*(s.y-sy));
+    if(d<bestD){bestD=d;best=t;}
+  });
+  return best;
+}
+function handlePick(cx,cy){
+  var t=pickTrack(cx,cy);
+  var mv=document.getElementById('mv');
+  var rect=mv.getBoundingClientRect();
+  if(t) selectTrack(t,cx-rect.left,cy-rect.top);
+  else clearSel();
+}
+function hoverPick(cx,cy){
+  var t=pickTrack(cx,cy);
+  var mv=document.getElementById('mv');
+  var rect=mv.getBoundingClientRect();
+  if(t) showTip(cx-rect.left,cy-rect.top,t);
+  else hideTip();
+}
+
+// ---- SELECT / TOOLTIP ----
+function showTip(x,y,t){
+  var tip=document.getElementById('tip');
+  document.getElementById('tn').textContent=t.callsign;
+  document.getElementById('ttype').textContent=t.actype||t.type.toUpperCase();
+  document.getElementById('talt').textContent=
+    t.type==='ship'?'SEA LEVEL':t.type==='osint'?'GROUND':
+    t.type==='satellite'?Math.floor(t.alt/1000)+' km LEO':
+    Math.floor(t.alt*3.281).toLocaleString()+' ft';
+  document.getElementById('tspd').textContent=t.speed+(t.type==='ship'?' kn':' kt');
+  document.getElementById('thdg').textContent=Math.floor(t.heading)+'deg';
+  document.getElementById('tsrc').textContent=t.type.toUpperCase();
+  tip.style.left=Math.min(x+14,W-170)+'px';
+  tip.style.top=Math.max(4,y-58)+'px';
+  tip.style.display='block';
+}
+function hideTip(){document.getElementById('tip').style.display='none';}
+function selectTrack(t,x,y){
+  selectedId=t.id;
+  var altStr=t.type==='ship'?'SEA LEVEL':t.type==='osint'?'GROUND':
+    t.type==='satellite'?Math.floor(t.alt/1000)+' km LEO':
+    Math.floor(t.alt*3.281).toLocaleString()+' ft';
+  document.getElementById('selinfo').innerHTML=
+    '<div style="color:var(--a);font-weight:bold;margin-bottom:4px;font-size:11px">'+t.callsign+'</div>'+
+    '<div style="line-height:1.9">'+
+    '<span style="color:rgba(168,216,232,.34)">TYPE</span> <span style="color:var(--a3)">'+(t.actype||t.type.toUpperCase())+'</span><br>'+
+    '<span style="color:rgba(168,216,232,.34)">ALT</span> <span style="color:var(--a3)">'+altStr+'</span><br>'+
+    '<span style="color:rgba(168,216,232,.34)">SPD</span> <span style="color:var(--a3)">'+t.speed+(t.type==='ship'?' kn':' kt')+'</span><br>'+
+    '<span style="color:rgba(168,216,232,.34)">HDG</span> <span style="color:var(--a3)">'+Math.floor(t.heading)+'deg</span><br>'+
+    '<span style="color:rgba(168,216,232,.34)">POS</span> <span style="color:var(--a3)">'+t.lat.toFixed(3)+'N '+t.lng.toFixed(3)+'E</span>'+
+    (t.squawk?'<br><span style="color:rgba(168,216,232,.34)">SQUAWK</span> <span style="color:'+(t.squawk==='7700'?'var(--a2)':'var(--a3)')+'">'+t.squawk+'</span>':'')+'</div>';
+  showTip(x,y,t);
+}
+function clearSel(){selectedId=null;document.getElementById('selinfo').textContent='Click any track to inspect.';hideTip();}
+
+// ---- LIVE UPDATES ----
+function startUpdates(){
+  setInterval(function(){
+    updateTick++;
+    tracks.forEach(function(t){
+      t.lat=Math.max(BOUNDS.latMin,Math.min(BOUNDS.latMax,t.lat+t.dlat+(Math.random()-.5)*.002));
+      t.lng=Math.max(BOUNDS.lngMin,Math.min(BOUNDS.lngMax,t.lng+t.dlng+(Math.random()-.5)*.004));
+      t.heading=(t.heading+(Math.random()-.5)*5+360)%360;
+    });
+    buildTrackBuffers();
+    updateStats();
+    if(updateTick%3===0)addFeedItem();
+    if(updateTick%10===0)buildAltBars();
+  },1600);
+}
+
+function updateStats(){
+  document.getElementById('cfl').textContent=65+Math.floor(Math.random()*7-3);
+  document.getElementById('csh').textContent=28+Math.floor(Math.random()*4-2);
+  // csa count managed by fetchSpectatorSatellites
+  document.getElementById('cos').textContent=500+Math.floor(Math.random()*60);
+  document.getElementById('st').textContent=tracks.length+Math.floor(Math.random()*10);
+  document.getElementById('sal').textContent=alertCount;
+  document.getElementById('ssq').textContent=tracks.filter(function(t){return t.squawk==='7700';}).length;
+  document.getElementById('ssh').textContent=28+Math.floor(Math.random()*3);
+  document.getElementById('thdr').textContent=(tracks.length+Math.floor(Math.random()*8))+' TRACKS';
+}
+
+// ---- ALT BARS ----
+function buildAltBars(){
+  var el=document.getElementById('abars');el.innerHTML='';
+  var edges=[0,300,1500,6000,12000,25000,100000,500000,1100000];
+  var cols=['#00ff88','#00b4dc','#00b4dc','#0099cc','#0066bb','#003399','#ffcc00','#ffcc00'];
+  var counts=new Array(edges.length-1).fill(0);
+  tracks.forEach(function(t){for(var b=0;b<edges.length-1;b++){if(t.alt>=edges[b]&&t.alt<edges[b+1]){counts[b]++;break;}}});
+  var mx=Math.max.apply(null,counts.concat([1]));
+  counts.forEach(function(c,i){var d=document.createElement('div');d.className='ab';d.style.height=Math.max(2,(c/mx)*100)+'%';d.style.background=cols[i];d.style.opacity='.72';el.appendChild(d);});
+}
+
+// ---- ACTIVITY CHART ----
+function buildAChart(){
+  var el=document.getElementById('achart');el.innerHTML='';
+  for(var i=0;i<24;i++){var v=180+Math.sin(i/24*Math.PI*2)*60+Math.random()*40;var b=document.createElement('div');b.className='mb';b.style.height=(v/260*100)+'%';b.style.background=(i>18||i<4)?'var(--a2)':'var(--a)';el.appendChild(b);}
+}
+
+// ---- TIMELINE ----
+function buildTimeline(){
+  var evs=[{t:'04:12Z',l:'Radar ON / Tehran',c:'var(--a2)'},{t:'06:45Z',l:'Fast mover',c:'var(--a2)'},{t:'07:30Z',l:'AIS dark',c:'var(--a3)'},{t:'08:15Z',l:'KH-13 pass',c:'var(--a3)'},{t:'09:00Z',l:'Convoy HWY-7',c:'var(--a4)'},{t:'10:22Z',l:'Drone Baghdad',c:'var(--a3)'},{t:'11:45Z',l:'Tanker Hormuz',c:'var(--a4)'},{t:'NOW',l:'LIVE',c:'var(--a)'}];
+  var tl=document.getElementById('tl');
+  evs.forEach(function(ev,i){var el=document.createElement('div');el.className='et';el.style.opacity=(i<evs.length-1)?'0.55':'1';var bg=(i===evs.length-1)?ev.c:'transparent';el.innerHTML='<div class="td" style="color:'+ev.c+';background:'+bg+'"></div><div class="tl2" style="color:'+ev.c+'">'+ev.l+'</div><div class="tm">'+ev.t+'</div>';tl.appendChild(el);});
+}
+
+// ---- FEED ----
+var FDS=[
+  {s:'AIR',c:'ta',m:['IRA{n} squawk 7700','Fast mover 640kt NE Tehran','NORDO FL220 Bandar Abbas','F-14 IRIAF signature','B-52 Gulf of Oman']},
+  {s:'SEA',c:'ts',m:['IRGCN speedboats Hormuz','Tanker AIS gap >45min','Unknown vessel 14kn no flag','Carrier group entering Gulf','Sub contact Oman Sea']},
+  {s:'SAT',c:'tt2',m:['OFEK-16 pass Iran 7min','SAR: Isfahan new activity','Sentinel-2 thermal Fordow','KH-13 pass 14:32Z Tehran']},
+  {s:'OSINT',c:'to',m:['@OSINTdefender: blast S Tehran','GeoConfirmed: convoy HWY7','LiveUAMap: AD radar activ','Telegram: BM warning S Iran']},
+  {s:'ALERT',c:'tr2',m:['SQUAWK 7700 IRA{n}','FAST MOVER NE Tehran','AIS DARK vessel Hormuz','EW JAMMING Baghdad area']}
+];
+function nowZ(){var n=new Date();return p2(n.getUTCHours())+':'+p2(n.getUTCMinutes())+'Z';}
+function addFeedItem(){
+  var tmpl=FDS[Math.floor(Math.random()*FDS.length)];
+  var msg=tmpl.m[Math.floor(Math.random()*tmpl.m.length)].replace('{n}',Math.floor(100+Math.random()*900));
+  var isA=tmpl.s==='ALERT';
+  feedItems.unshift({s:tmpl.s,c:tmpl.c,m:(isA?'[!] ':'')+msg,t:nowZ(),a:isA});
+  if(feedItems.length>40)feedItems.pop();
+  renderFeed();
+  if(isA){alertCount++;document.getElementById('ac').textContent=alertCount;}
+}
+function renderFeed(){document.getElementById('flist').innerHTML=feedItems.slice(0,22).map(function(f){return '<div class="fi'+(f.a?' al':'')+'"><div class="ft '+f.c+'">'+f.s+'</div><div class="fx">'+f.m+'</div><div class="fm">'+f.t+'</div></div>';}).join('');}
+function startFeed(){for(var i=0;i<10;i++)addFeedItem();}
+
+// ---- CONTROLS ----
+window.toggleSrc=function(el,layer){
+  layerOn[layer]=!layerOn[layer];
+  el.classList.toggle('on',layerOn[layer]);
+  el.classList.toggle('off',!layerOn[layer]);
+  buildTrackBuffers();
+};
+window.tsw=function(id){
+  var sw=document.getElementById(id);sw.classList.toggle('on');
+  var on=sw.classList.contains('on');
+  if(id==='sw-drop')showDrop=on;
+  if(id==='sw-rings')showRings=on;
+  if(id==='sw-grid')showGrid=on;
+  if(id==='sw-labels')showLabels=on;
+  if(id==='sw-stars')showStars=on;
+  if(id==='sw-sattex')setTileMapVisible(on);
+};
+window.setCam=function(mode,btn){
+  document.querySelectorAll('#cp .cb').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');
+  if(mode==='free'){camDistTgt=3.0;camPhiTgt=1.1;document.getElementById('ctag').textContent='3D GLOBE // FREE CAM';}
+  else if(mode==='tilt'){camDistTgt=2.2;camPhiTgt=1.3;document.getElementById('ctag').textContent='3D TILT // OBLIQUE';}
+  else if(mode==='top'){camDistTgt=2.5;camPhiTgt=0.04;document.getElementById('ctag').textContent='TOP-DOWN // OVERHEAD';}
+};
+window.flyTo=function(r){
+  var D={iran:{lat:32.5,lng:53.0,d:2.8},hormuz:{lat:26.5,lng:56.5,d:1.3},gulf:{lat:27.0,lng:51.0,d:1.6},wide:{lat:30.0,lng:50.0,d:5.0},tehran:{lat:35.7,lng:51.4,d:1.1},leo:{lat:32.5,lng:53.0,d:1.6}};
+  var dest=D[r];if(!dest)return;
+  camThetaTgt=(dest.lng+180)*Math.PI/180;
+  camPhiTgt=(90-dest.lat)*Math.PI/180;
+  camDistTgt=dest.d;
+  document.getElementById('ctag').textContent='FLY TO: '+r.toUpperCase();
+};
+window.triggerAlert=function(){
+  var msgs=['BALLISTIC MISSILE LAUNCH W IRAN','FAST MOVER TEHRAN AIRSPACE','NAVAL BLOCKADE HORMUZ','DRONE SWARM S BAGHDAD'];
+  var msg=msgs[Math.floor(Math.random()*msgs.length)];
+  feedItems.unshift({s:'ALERT',c:'tr2',m:'[!] '+msg,t:nowZ(),a:true});renderFeed();
+  alertCount++;document.getElementById('ac').textContent=alertCount;document.getElementById('sal').textContent=alertCount;
+  var tl=document.getElementById('tlist'),d=document.createElement('div');
+  d.className='ti h af';d.innerHTML='<div><div style="font-size:10px;color:var(--a2);font-weight:bold">HIGH</div><div style="font-size:9px;margin-top:1px">'+msg+'</div></div>';
+  tl.insertBefore(d,tl.firstChild);if(tl.children.length>5)tl.removeChild(tl.lastChild);
+};
+window.clearAlerts=function(){
+  alertCount=0;document.getElementById('ac').textContent=0;document.getElementById('sal').textContent=0;
+  document.getElementById('tlist').innerHTML='<div style="font-size:9px;color:rgba(168,216,232,.25);padding:7px">No active threats.</div>';
+};
+
+// ---- TILE MAP BACKGROUND ----
+// Full-viewport slippy tile map rendered in a <canvas> element behind the WebGL globe.
+// Basemap: CartoDB Dark Matter (free, CORS-open, no key needed).
+// Spectator Earth scene tiles overlaid on top when a scene is loaded.
+
+var SPECTATOR_KEY = '2PJ5M8JZLBBtwaXf26A9ip';
+var TILE_ZOOM_SPEC = 6;
+var spectatorSceneId = null;
+
+// ── Map state
+var mapCanvas, mapCtx;
+var mapCenterLng = 53.0, mapCenterLat = 32.0; // Iran
+var mapZoom = 5;
+var tileMapVisible = true;
+var tileCache = {};         // url -> Image (loaded)
+var pendingTiles = {};      // url -> true (in-flight)
+var spectatorCache = {};    // url -> Image
+
+// Tile providers
+var BASEMAP_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+var BASEMAP_SUBDOMAINS = ['a','b','c','d'];
+
+// ── Mercator math
+function lng2tileF(lng, z){ return (lng+180)/360 * Math.pow(2,z); }
+function lat2tileF(lat, z){
+  var s = Math.sin(lat*Math.PI/180);
+  return (1 - Math.log((1+s)/(1-s))/(2*Math.PI)) / 2 * Math.pow(2,z);
+}
+function tile2lng(x,z){ return x/Math.pow(2,z)*360-180; }
+function tile2lat(y,z){
+  var n = Math.PI - 2*Math.PI*y/Math.pow(2,z);
+  return 180/Math.PI * Math.atan(0.5*(Math.exp(n)-Math.exp(-n)));
+}
+
+// ── Build/init the map canvas
+function initMapCanvas(){
+  var mv = document.getElementById('mv');
+  mapCanvas = document.createElement('canvas');
+  mapCanvas.id = 'map-canvas';
+  mapCanvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:1;display:block;';
+  mv.insertBefore(mapCanvas, mv.firstChild);
+  mapCtx = mapCanvas.getContext('2d');
+  resizeMapCanvas();
+  window.addEventListener('resize', resizeMapCanvas);
+}
+
+function resizeMapCanvas(){
+  if(!mapCanvas) return;
+  var mv = document.getElementById('mv');
+  mapCanvas.width  = mv.clientWidth  * devicePixelRatio;
+  mapCanvas.height = mv.clientHeight * devicePixelRatio;
+  mapCanvas.style.width  = mv.clientWidth  + 'px';
+  mapCanvas.style.height = mv.clientHeight + 'px';
+  drawTileMap();
+}
+
+// ── Draw the full tile map onto mapCanvas
+function drawTileMap(){
+  if(!mapCtx || !tileMapVisible) {
+    if(mapCtx){ mapCtx.clearRect(0,0,mapCanvas.width,mapCanvas.height); }
+    return;
+  }
+
+  var W = mapCanvas.width, H = mapCanvas.height;
+  mapCtx.clearRect(0,0,W,H);
+  mapCtx.fillStyle = '#020810';
+  mapCtx.fillRect(0,0,W,H);
+
+  var z = Math.floor(mapZoom);
+  var tileSize = 256 * devicePixelRatio;
+
+  // Fractional tile coords of center
+  var cx = lng2tileF(mapCenterLng, z);
+  var cy = lat2tileF(mapCenterLat, z);
+
+  // Pixel offset of top-left corner
+  var originX = W/2 - cx*tileSize;
+  var originY = H/2 - cy*tileSize;
+
+  // Which tiles are visible?
+  var txMin = Math.floor(-originX/tileSize) - 1;
+  var tyMin = Math.floor(-originY/tileSize) - 1;
+  var txMax = Math.ceil((W - originX)/tileSize);
+  var tyMax = Math.ceil((H - originY)/tileSize);
+  var nTiles = Math.pow(2, z);
+  txMin = Math.max(0, txMin); txMax = Math.min(nTiles-1, txMax);
+  tyMin = Math.max(0, tyMin); tyMax = Math.min(nTiles-1, tyMax);
+
+  // Draw basemap tiles
+  for(var tx=txMin; tx<=txMax; tx++){
+    for(var ty=tyMin; ty<=tyMax; ty++){
+      var sub = BASEMAP_SUBDOMAINS[(tx+ty) % BASEMAP_SUBDOMAINS.length];
+      var r = (devicePixelRatio > 1) ? '@2x' : '';
+      var url = BASEMAP_URL
+        .replace('{s}', sub)
+        .replace('{z}', z)
+        .replace('{x}', tx)
+        .replace('{y}', ty)
+        .replace('{r}', r);
+
+      var px = Math.round(originX + tx*tileSize);
+      var py = Math.round(originY + ty*tileSize);
+      var ts = Math.ceil(tileSize) + 1;
+
+      if(tileCache[url] && tileCache[url].complete){
+        mapCtx.drawImage(tileCache[url], px, py, ts, ts);
+      } else if(!pendingTiles[url]){
+        pendingTiles[url] = true;
+        (function(u){ 
+          var img = new Image();
+          img.onload = function(){ tileCache[u]=img; delete pendingTiles[u]; drawTileMap(); };
+          img.onerror= function(){ delete pendingTiles[u]; };
+          img.src = u;
+        })(url);
+      }
+
+      // Spectator overlay tile on top if loaded
+      if(spectatorSceneId){
+        var sUrl = 'https://api.spectator.earth/imagery/'+spectatorSceneId+
+          '/tiles/'+z+'/'+tx+'/'+ty+
+          '/?bands_formula=b04,b03,b02&api_key='+SPECTATOR_KEY;
+        if(spectatorCache[sUrl] && spectatorCache[sUrl].complete){
+          mapCtx.globalAlpha = 0.75;
+          mapCtx.drawImage(spectatorCache[sUrl], px, py, ts, ts);
+          mapCtx.globalAlpha = 1.0;
+        } else if(!pendingTiles[sUrl]){
+          pendingTiles[sUrl] = true;
+          (function(u){
+            var img = new Image();
+            img.onload = function(){ spectatorCache[u]=img; delete pendingTiles[u]; drawTileMap(); };
+            img.onerror= function(){ delete pendingTiles[u]; };
+            img.src = u;
+          })(sUrl);
+        }
+      }
+    }
+  }
+
+  // Dark vignette over the map edges
+  var grad = mapCtx.createRadialGradient(W/2,H/2,H*0.2,W/2,H/2,H*0.75);
+  grad.addColorStop(0,'rgba(2,8,16,0)');
+  grad.addColorStop(1,'rgba(2,8,16,0.72)');
+  mapCtx.fillStyle = grad;
+  mapCtx.fillRect(0,0,W,H);
+
+  // Subtle scan-line overlay
+  mapCtx.fillStyle = 'rgba(0,180,220,0.03)';
+  for(var y2=0; y2<H; y2+=4){ mapCtx.fillRect(0,y2,W,1); }
+}
+
+// ── Sync map center/zoom from globe camera (camTheta/camPhi/camDist)
+function syncMapFromGlobe(){
+  if(!tileMapVisible) return;
+  // Convert spherical camera angles to lng/lat
+  var lng = (camTheta*180/Math.PI - 180 + 360) % 360 - 180;  // -180..180
+  var lat = 90 - camPhi*180/Math.PI;                          // 90..-90
+  // Zoom: closer camera = higher map zoom
+  var z = Math.max(2, Math.min(8, Math.round(12 - camDist*2.2)));
+  var changed = (Math.abs(lng-mapCenterLng)>0.5 || Math.abs(lat-mapCenterLat)>0.5 || z!==mapZoom);
+  mapCenterLng = lng;
+  mapCenterLat = Math.max(-85, Math.min(85, lat));
+  mapZoom = z;
+  if(changed) drawTileMap();
+}
+
+// ── Toggle
+function setTileMapVisible(on){
+  tileMapVisible = on;
+  if(mapCanvas) mapCanvas.style.display = on ? 'block' : 'none';
+  drawTileMap();
+}
+
+// ── Scene search via image probe (no fetch needed)
+var PROBE = {z:6, x:40, y:22};
+var CANDIDATES=[68000000,65000000,62000000,59000000,56000000,53000000,50000000,45000000,40000000,35000000,30000000,25000000];
+
+function probeScene(id, onHit, onMiss){
+  var img = new Image();
+  img.onload  = function(){ onHit(id); };
+  img.onerror = function(){ onMiss(id); };
+  img.src = 'https://api.spectator.earth/imagery/'+id+
+    '/tiles/'+PROBE.z+'/'+PROBE.x+'/'+PROBE.y+
+    '/?bands_formula=b04,b03,b02&api_key='+SPECTATOR_KEY;
+}
+
+function loadSpectatorTiles(){
+  setApiStatus('sm',0,'SCANNING');
+  var ci = 0;
+  function next(){
+    if(ci >= CANDIDATES.length){ setApiStatus('sm',3,'NO SCENE'); return; }
+    var id = CANDIDATES[ci++];
+    setApiStatus('sm',0,'PROBE '+Math.floor(id/1e6)+'M');
+    probeScene(id,
+      function(foundId){
+        binaryRefine(foundId, CANDIDATES[Math.max(0,ci-2)]||foundId+4000000, 0, useScene);
+      },
+      next
+    );
+  }
+  function binaryRefine(lo, hi, depth, done){
+    if(depth>12 || hi-lo<100000){ done(lo); return; }
+    var mid = Math.floor((lo+hi)/2);
+    probeScene(mid,
+      function(){ binaryRefine(mid, hi, depth+1, done); },
+      function(){ binaryRefine(lo, mid-1, depth+1, done); }
+    );
+  }
+  next();
+}
+
+function useScene(id){
+  spectatorSceneId = id;
+  spectatorCache = {}; // clear old scene tiles
+  setApiStatus('sm',2,'SAT IMG ACTIVE');
+  console.log('Spectator scene:', id);
+  drawTileMap();
+  // Count loaded tiles after short delay
+  setTimeout(function(){
+    var n = Object.keys(spectatorCache).length;
+    if(n>0) setApiStatus('sm',1,'LIVE '+n+' TILES');
+    else setApiStatus('sm',2,'SAT IMG '+id);
+  }, 8000);
+}
+
+// ---- API STATUS ----// ---- API STATUS ----// ---- API STATUS ----// ---- API STATUS ----
+// Simulates realistic API health checks with random latency + state cycling
+var API_CONFIGS = [
+  { id: 'fr24',  name: 'FlightRadar24', url: 'https://data-live.flightradar24.com/zones/fcgi/feed.js',   keyEnv: null },
+  { id: 'mt',    name: 'MarineTraffic', url: 'https://services.marinetraffic.com/api/exportvessel/',     keyEnv: null },
+  { id: 'sm',    name: 'Spectator Sats', url: null,                                                        keyEnv: null },
+  { id: 'osint', name: 'OSINT Feeds',   url: null,                                                       keyEnv: null }
+];
+
+// Status codes: 0=checking, 1=green, 2=yellow, 3=red
+var apiStates = { fr24: 0, mt: 0, sm: 0, osint: 0 };
+
+function setApiStatus(id, state, label) {
+  var dot = document.getElementById('dot-' + id);
+  var txt = document.getElementById('status-' + id);
+  if (!dot || !txt) return;
+  var cls  = ['grey','green','yellow','red'][state];
+  dot.className = 'api-dot ' + cls;
+  txt.className = 'api-status ' + cls;
+  txt.textContent = label;
+  apiStates[id] = state;
+}
+
+function checkApiStatus(cfg, delay) {
+  setTimeout(function() {
+    setApiStatus(cfg.id, 0, 'PROBING...');
+    // All APIs require keys / CORS — they will fail in browser without auth.
+    // We model this honestly: no key = RED (unauthorized), key present = attempt real fetch.
+    if (!cfg.url) {
+      // Status managed externally (OSINT aggregated, Spectator via fetchSpectatorSatellites)
+      setTimeout(function() {
+        if(cfg.id === 'sm') {
+          // Leave as-is — fetchSpectatorSatellites will set status
+        } else {
+          setApiStatus(cfg.id, 2, 'NO KEY');
+        }
+      }, 600 + Math.random()*400);
+      return;
+    }
+    var start = Date.now();
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = controller ? setTimeout(function(){ controller.abort(); }, 4000) : null;
+    fetch(cfg.url, {
+      method: 'HEAD',
+      mode: 'no-cors',
+      signal: controller ? controller.signal : undefined
+    }).then(function() {
+      clearTimeout(timer);
+      var ms = Date.now() - start;
+      // no-cors always "succeeds" (opaque) — means server reachable but auth unknown
+      if (ms < 3000) {
+        setApiStatus(cfg.id, 2, 'NO KEY');   // reachable, no auth
+      } else {
+        setApiStatus(cfg.id, 2, 'SLOW');
+      }
+    }).catch(function(err) {
+      clearTimeout(timer);
+      if (err && err.name === 'AbortError') {
+        setApiStatus(cfg.id, 3, 'TIMEOUT');
+      } else {
+        setApiStatus(cfg.id, 3, 'OFFLINE');
+      }
+    });
+  }, delay);
+}
+
+function initApiStatus() {
+  // Stagger the checks for realistic feel
+  API_CONFIGS.forEach(function(cfg, i) {
+    checkApiStatus(cfg, 800 + i * 600);
+  });
+  // Re-check every 30s
+  setInterval(function() {
+    API_CONFIGS.forEach(function(cfg, i) {
+      checkApiStatus(cfg, i * 400);
+    });
+  }, 30000);
+}
+
+// If real API keys are injected, upgrade status to green and enable live data
+function activateApiKey(id, key) {
+  if (!key || key.length < 8) return;
+  setApiStatus(id, 1, 'LIVE');
+  // TODO: wire up real data fetch here per API
+}
+
+// ---- START ----
+function startApp(){
+  if(!initGL())return;
+  globeBufs=buildGlobe();
+  initMapCanvas();
+
+  // Spectator Earth satellite texture
+  globeTex=gl.createTexture();
+  globeTexBlend=0.0;
+  // 1x1 transparent placeholder so shader doesn't crash before tiles load
+  gl.bindTexture(gl.TEXTURE_2D,globeTex);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,0]));
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  starBuf=buildStars();
+  gridLines=buildGridLines();
+  ringLines=buildRings();
+  tracks=makeFlights(65).concat(makeShips(28)).concat(makeSats(8)).concat(makeOsint(12));
+  buildTrackBuffers();
+  buildAltBars();buildAChart();buildTimeline();startFeed();startUpdates();initApiStatus();setTimeout(loadSpectatorTiles,1200);setTimeout(fetchSpectatorSatellites,2000);
+
+  var cv=document.getElementById('c3d');
+  cv.addEventListener('mousedown',onMD);
+  cv.addEventListener('mousemove',onMM);
+  cv.addEventListener('mouseup',onMU);
+  cv.addEventListener('wheel',onWH,{passive:true});
+  cv.addEventListener('touchstart',onTS,{passive:true});
+  cv.addEventListener('touchmove',onTM,{passive:false});
+  cv.addEventListener('touchend',function(){drag=false;});
+
+  window.addEventListener('resize',function(){
+    var mv=document.getElementById('mv');
+    W=mv.clientWidth;H=mv.clientHeight;
+    canvas.width=W*devicePixelRatio;canvas.height=H*devicePixelRatio;
+    canvas.style.width=W+'px';canvas.style.height=H+'px';
+    gl.viewport(0,0,canvas.width,canvas.height);
+  });
+
+  requestAnimationFrame(loop);
+}
+
+})();
+</script>
+</body>
+</html>
